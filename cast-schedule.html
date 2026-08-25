@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>キャスト出勤表メーカー</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --bg:#0B0A0E;
+    --card:#1C1520;
+    --card2:#221A26;
+    --blood:#8E1B2B;
+    --blood-bright:#C4283D;
+    --violet:#5C3A78;
+    --bone:#E9E3D6;
+    --bone-dim:#B8AFA0;
+    --line:#3A2E3D;
+    --slot-line:#4A3B52;
+    --glow: rgba(196,40,61,.45);
+  }
+  *{box-sizing:border-box;}
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    color:var(--bone);
+    font-family:'Noto Sans JP', sans-serif;
+    padding:30px 16px 90px;
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(140,30,45,.25), transparent 60%),
+      radial-gradient(ellipse 800px 600px at 90% 10%, rgba(92,58,120,.22), transparent 55%),
+      radial-gradient(ellipse 1000px 700px at 50% 110%, rgba(80,20,30,.28), transparent 60%),
+      var(--bg);
+    position:relative;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, rgba(233,227,214,.25) 0, transparent 100%),
+      radial-gradient(1px 1px at 70% 65%, rgba(233,227,214,.18) 0, transparent 100%),
+      radial-gradient(1px 1px at 40% 80%, rgba(233,227,214,.2) 0, transparent 100%),
+      radial-gradient(1px 1px at 85% 20%, rgba(233,227,214,.15) 0, transparent 100%);
+    pointer-events:none;
+    z-index:0;
+  }
+
+  .wrap{ max-width:1060px; margin:0 auto; position:relative; z-index:1; }
+
+  .page-head{ text-align:center; margin-bottom:26px; }
+  h1.page-title{
+    font-family:'Yuji Syuku', serif;
+    font-size:32px;
+    font-weight:400;
+    margin:0 0 6px;
+    letter-spacing:.08em;
+    color:var(--bone);
+    text-shadow:
+      0 0 6px var(--glow),
+      0 0 22px rgba(140,30,45,.55),
+      0 2px 0 #000;
+    animation: flicker 6s infinite ease-in-out;
+  }
+  @keyframes flicker{
+    0%,19%,21%,23%,53%,55%,100%{ opacity:1; }
+    20%,22%,54%{ opacity:.82; }
+  }
+  p.page-sub{
+    color:var(--bone-dim);
+    font-size:12.5px;
+    margin:0;
+    letter-spacing:.04em;
+  }
+
+  /* ---- toolbar ---- */
+  .toolbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    justify-content:center;
+    margin:22px 0 24px;
+  }
+  .btn{
+    font-family:'Noto Sans JP', sans-serif;
+    font-size:13px;
+    font-weight:700;
+    border-radius:8px;
+    padding:10px 16px;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    color:var(--bone);
+    background:var(--card2);
+    border:1.5px solid var(--line);
+    letter-spacing:.02em;
+  }
+  .btn:hover{ transform:translateY(-1px); border-color:var(--blood-bright); }
+  .btn.primary{
+    background:linear-gradient(160deg, var(--blood-bright), var(--blood) 70%);
+    border:1.5px solid var(--blood-bright);
+    box-shadow:0 0 18px rgba(196,40,61,.45);
+    font-size:14px;
+    padding:11px 22px;
+  }
+  .btn.primary:hover{ box-shadow:0 0 26px rgba(196,40,61,.7); }
+
+  /* ---- viewfinder wrapper (decorative, NOT captured) ---- */
+  .frame-wrapper{
+    position:relative;
+    border:2px dashed var(--blood-bright);
+    border-radius:14px;
+    padding:28px;
+    margin-bottom:28px;
+    overflow-x:auto;
+    box-shadow:0 0 40px rgba(140,30,45,.15) inset;
+  }
+  .frame-tag{
+    position:absolute;
+    top:-15px;
+    left:24px;
+    background:var(--blood-bright);
+    color:#fff;
+    font-size:11px;
+    font-weight:700;
+    padding:4px 12px;
+    border-radius:999px;
+    letter-spacing:.03em;
+    box-shadow:0 0 12px rgba(196,40,61,.6);
+  }
+
+  /* ---- captured area (this IS the saved image) ---- */
+  #captureArea{
+    background:
+      radial-gradient(ellipse 500px 300px at 50% 0%, rgba(140,30,45,.12), transparent 65%),
+      #14101A;
+    border:1px solid #2A212F;
+    border-radius:10px;
+    padding:24px 22px 28px;
+    min-width:fit-content;
+  }
+  .cap-title{
+    font-family:'Yuji Syuku', serif;
+    font-size:26px;
+    font-weight:400;
+    text-align:center;
+    outline:none;
+    color:var(--bone);
+    letter-spacing:.06em;
+    text-shadow:0 0 10px rgba(196,40,61,.5);
+    border-bottom:2px solid transparent;
+    padding-bottom:4px;
+  }
+  .cap-title:focus{ border-bottom:2px solid var(--blood-bright); }
+
+  /* global date / weekday / time (calendar-selectable) */
+  .cap-datetime{
+    display:flex;
+    align-items:baseline;
+    justify-content:center;
+    gap:14px;
+    flex-wrap:wrap;
+    margin:8px 0 22px;
+    padding-bottom:14px;
+    border-bottom:1px solid var(--line);
+  }
+  .cap-date-wrap{
+    display:flex;
+    align-items:baseline;
+    gap:7px;
+    cursor:pointer;
+    padding:2px 8px;
+    border-radius:6px;
+    transition:background .12s ease;
+  }
+  .cap-date-wrap:hover{ background:rgba(196,40,61,.12); }
+  .cap-date-text{
+    font-family:'Yuji Syuku', serif;
+    font-size:19px;
+    color:var(--bone);
+  }
+  .weekday-badge{
+    font-size:11px;
+    font-weight:700;
+    padding:1px 7px;
+    border-radius:5px;
+    background:rgba(233,227,214,.12);
+    color:var(--bone);
+  }
+  .weekday-badge.wd-sun{ background:var(--blood-bright); }
+  .weekday-badge.wd-sat{ background:var(--violet); }
+  .cap-time-text{
+    font-size:14px;
+    font-weight:700;
+    color:var(--bone-dim);
+    outline:none;
+    border-bottom:1px dashed rgba(233,227,214,.4);
+    padding-bottom:2px;
+    cursor:text;
+  }
+  .cap-time-text:focus{ border-bottom:1px dashed var(--bone); color:var(--bone); }
+
+  /* ---- flat slot grid (no columns -> no gaps when adding/removing) ---- */
+  .slots-grid{
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+  }
+  .slot{
+    position:relative;
+    flex:0 0 128px;
+    height:110px;
+    border:2px dashed var(--slot-line);
+    border-radius:8px;
+    background:rgba(255,255,255,.02);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    padding:8px;
+    transition:background .12s ease, border-color .12s ease, box-shadow .12s ease;
+  }
+  .slot.dragover{ background:rgba(196,40,61,.12); border-color:var(--blood-bright); box-shadow:0 0 14px rgba(196,40,61,.35); }
+  .slot-placeholder{
+    font-size:11px;
+    color:#7A6E82;
+    text-align:center;
+    font-weight:500;
+    line-height:1.5;
+    pointer-events:none;
+  }
+  .slot.filled{
+    border-style:solid;
+    border-color:var(--blood-bright);
+    background:linear-gradient(160deg, rgba(196,40,61,.1), rgba(196,40,61,.02));
+    box-shadow:0 0 12px rgba(196,40,61,.2) inset;
+  }
+  .slot-avatar{
+    width:46px; height:46px;
+    border-radius:50%;
+    object-fit:cover;
+    border:2px solid var(--blood-bright);
+    box-shadow:0 0 8px rgba(196,40,61,.5);
+    pointer-events:none;
+  }
+  .slot-name{
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--bone);
+    text-align:center;
+    pointer-events:none;
+    max-width:100%;
+    overflow-wrap:break-word;
+  }
+  .slot-clear{
+    position:absolute;
+    top:-7px; right:-7px;
+    width:18px; height:18px;
+    border-radius:50%;
+    background:var(--blood-bright);
+    color:#fff;
+    border:2px solid #14101A;
+    font-size:10px;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    padding:0;
+  }
+
+  /* ---- cast pool (outside the captured frame) ---- */
+  .pool-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:20px 22px;
+    box-shadow:0 8px 30px rgba(0,0,0,.35);
+  }
+  .pool-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .pool-head h2{
+    font-family:'Yuji Syuku', serif;
+    font-weight:400;
+    font-size:18px;
+    margin:0;
+    letter-spacing:.05em;
+    color:var(--bone);
+  }
+  .pool-hint{ font-size:11px; color:var(--bone-dim); margin:0; }
+  .cast-list{ display:flex; flex-wrap:wrap; gap:14px; }
+  .cast-chip{
+    position:relative;
+    width:80px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:5px;
+    cursor:grab;
+    padding:8px 4px 10px;
+    border-radius:12px;
+    border:2px solid transparent;
+    transition:border-color .12s ease, background .12s ease;
+  }
+  .cast-chip:active{ cursor:grabbing; }
+  .cast-chip.selected{
+    border-color:var(--blood-bright);
+    background:rgba(196,40,61,.1);
+  }
+  .cast-chip img{
+    width:54px; height:54px;
+    border-radius:50%;
+    object-fit:cover;
+    border:2px solid var(--line);
+    pointer-events:none;
+  }
+  .cast-chip span{
+    font-size:11.5px;
+    font-weight:700;
+    text-align:center;
+    color:var(--bone);
+    pointer-events:none;
+    overflow-wrap:break-word;
+  }
+  .cast-remove{
+    position:absolute;
+    top:0; right:2px;
+    width:16px; height:16px;
+    border-radius:50%;
+    background:var(--card);
+    color:var(--blood-bright);
+    border:1.5px solid var(--blood-bright);
+    font-size:9px;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    padding:0;
+    line-height:1;
+  }
+
+  /* ---- add cast panel ---- */
+  .modal-backdrop{
+    position:fixed; inset:0;
+    background:rgba(6,4,8,.7);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:50;
+    padding:16px;
+  }
+  .modal-backdrop.open{ display:flex; }
+  .modal{
+    background:var(--card2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:22px;
+    width:320px;
+    max-width:100%;
+    box-shadow:0 0 40px rgba(196,40,61,.25);
+  }
+  .modal h3{
+    font-family:'Yuji Syuku', serif;
+    font-weight:400;
+    margin:0 0 14px;
+    font-size:18px;
+    color:var(--bone);
+    letter-spacing:.05em;
+  }
+  .modal label{
+    display:block;
+    font-size:12px;
+    font-weight:700;
+    color:var(--bone-dim);
+    margin:12px 0 5px;
+  }
+  .modal input[type="text"]{
+    width:100%;
+    padding:9px 10px;
+    border-radius:8px;
+    border:1.5px solid var(--line);
+    background:#0F0B12;
+    color:var(--bone);
+    font-size:14px;
+    font-family:inherit;
+  }
+  .modal input[type="file"]{ font-size:12px; color:var(--bone-dim); }
+  .modal-actions{ display:flex; gap:8px; margin-top:20px; }
+  .modal-actions .btn{ flex:1; justify-content:center; }
+
+  @media (max-width:600px){
+    .frame-wrapper{ padding:20px 14px; }
+    .slot{ flex:0 0 110px; height:100px; }
+    h1.page-title{ font-size:26px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="page-head">
+    <h1 class="page-title">キャスト出勤表メーカー</h1>
+    <p class="page-sub">キャストをドラッグ&ドロップ（またはタップ選択→枠タップ）して配置し、画像として保存できます</p>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn" data-action="add-row">＋ 枠を追加</button>
+    <button class="btn" data-action="remove-row">－ 枠を削除</button>
+    <button class="btn primary" data-action="save-image">画像として保存</button>
+  </div>
+
+  <div class="frame-wrapper">
+
+    <div id="captureArea">
+      <div class="cap-title" contenteditable="true" id="capTitle">出現予定の八尺様</div>
+
+      <div class="cap-datetime">
+        <span class="cap-date-wrap" id="capDateWrap" data-action="open-date">
+          <span class="cap-date-text" id="capDateText"></span>
+          <span class="weekday-badge" id="capWeekdayBadge"></span>
+        </span>
+        <span class="cap-time-text" contenteditable="true" id="capTimeText">21:00~</span>
+      </div>
+
+      <div class="slots-grid" id="slotsGrid"></div>
+    </div>
+  </div>
+
+  <div class="pool-card">
+    <div class="pool-head">
+      <h2>キャスト一覧</h2>
+      <button class="btn" data-action="open-add-cast">＋ キャストを追加</button>
+    </div>
+    <p class="pool-hint">枠の上にドラッグ、またはタップしてから配置したい枠をタップしてください</p>
+    <div class="cast-list" id="castList"></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="addCastBackdrop">
+  <div class="modal">
+    <h3>キャストを追加</h3>
+    <label for="newCastName">名前（役名）</label>
+    <input type="text" id="newCastName" placeholder="例）田中">
+    <label for="newCastPhoto">写真（任意・未選択なら八尺様アイコンを自動生成）</label>
+    <input type="file" id="newCastPhoto" accept="image/*">
+    <div class="modal-actions">
+      <button class="btn" data-action="cancel-add-cast">キャンセル</button>
+      <button class="btn primary" data-action="confirm-add-cast">追加する</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   サンプルキャストのデータ
+   ---------------------------------------------------------------------
+   ここを書き換えるだけで、初期表示されるキャストの「名前」と「写真」を
+   差し替えられます。
+     name  : キャスト（役者）の名前・役名
+     img   : 写真のURL（例 "photos/cast01.jpg"）。空文字 "" のままなら
+             デフォルメした八尺様アイコンを自動生成します。
+     bg    : アイコン自動生成時の背景色（img を指定する場合は無視されます）
+   ========================================================================= */
+const CAST_LIST = [
+  { name: "江戸モン", img: "", bg: "#FFFFFF" },
+  { name: "ととくま", img: "", bg: "#FFFFFF" },
+  { name: "こえだ", img: "", bg: "#FFFFFF" },
+  { name: "風間", img: "", bg: "#FFFFFF" },
+  { name: "ゆいは", img: "", bg: "#FFFFFF" },
+  { name: "ツガル", img: "", bg: "#FFFFFF" },
+  { name: "Cham", img: "", bg: "#FFFFFF" },
+  { name: "M4PLE", img: "", bg: "#FFFFFF" },
+  { name: "ぴよの", img: "", bg: "#FFFFFF" },
+  { name: "ととくま", img: "", bg: "#FFFFFF" },
+];
+/* ===================================================================== */
+
+const PALETTE = ["#3B1220","#241533","#1F2A38","#331A12","#2A2413","#1A2E2A"];
+let uid = 0;
+const nextId = () => "id" + (++uid);
+
+/* デフォルメした八尺様の顔アイコンをその場で生成（写真未登録時のデフォルト）
+   ・つばの広い帽子で目元に影が落ちているシルエットが特徴 */
+function hachishakuAvatarURI(bg){
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120">
+    <rect width="120" height="120" rx="60" fill="${bg}"/>
+    <ellipse cx="60" cy="72" rx="25" ry="29" fill="#EDE7DC"/>
+    <path d="M32 54 Q60 20 88 54 Q88 60 80 58 Q60 46 40 58 Q32 60 32 54 Z" fill="#171017"/>
+    <ellipse cx="60" cy="53" rx="42" ry="9" fill="#171017"/>
+    <ellipse cx="60" cy="62" rx="22" ry="9" fill="#000000" opacity="0.45"/>
+    <circle cx="51" cy="63" r="2.4" fill="#241722"/>
+    <circle cx="69" cy="63" r="2.4" fill="#241722"/>
+    <path d="M49 82 Q60 89 71 82" stroke="#B8AFA0" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  </svg>`;
+  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, s => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+  }[s]));
+}
+
+/* ---- cast pool state ---- */
+const castPool = CAST_LIST.map(c => ({
+  id: nextId(),
+  name: c.name,
+  img: c.img || hachishakuAvatarURI(c.bg)
+}));
+let selectedCastId = null;
+
+/* ---- date helpers ---- */
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function weekdayInfo(dateStr){
+  const d = new Date(dateStr + "T00:00:00");
+  const wd = ["日","月","火","水","木","金","土"][d.getDay()];
+  let cls = "";
+  if(d.getDay() === 0) cls = "wd-sun";
+  else if(d.getDay() === 6) cls = "wd-sat";
+  return { wd, cls, label: (d.getMonth()+1) + "月" + d.getDate() + "日" };
+}
+
+/* ---- schedule state (flat list of slots — no columns) ---- */
+function makeSlot(){ return { id: nextId(), cast: null }; }
+
+const state = {
+  eventDate: todayStr(),
+  slots: Array.from({length: 6}, makeSlot)
+};
+
+/* ---- render ---- */
+const slotsGrid = document.getElementById("slotsGrid");
+const castListEl = document.getElementById("castList");
+const capDateText = document.getElementById("capDateText");
+const capWeekdayBadge = document.getElementById("capWeekdayBadge");
+
+function updateDateDisplay(){
+  const wd = weekdayInfo(state.eventDate);
+  capDateText.textContent = wd.label;
+  capWeekdayBadge.textContent = wd.wd;
+  capWeekdayBadge.className = "weekday-badge " + wd.cls;
+}
+
+function render(){
+  updateDateDisplay();
+
+  slotsGrid.innerHTML = state.slots.map(slot => renderSlot(slot)).join("");
+
+  castListEl.innerHTML = castPool.map(c => `
+    <div class="cast-chip ${c.id === selectedCastId ? "selected" : ""}" draggable="true" data-cast-id="${c.id}">
+      <button class="cast-remove" data-action="remove-cast" data-cast-id="${c.id}" title="一覧から削除">×</button>
+      <img src="${c.img}" alt="">
+      <span>${escapeHtml(c.name)}</span>
+    </div>
+  `).join("");
+}
+
+function renderSlot(slot){
+  if(slot.cast){
+    return `
+      <div class="slot filled" data-action="drop-target" data-slot-id="${slot.id}">
+        <button class="slot-clear no-capture" data-action="clear-slot" data-slot-id="${slot.id}">×</button>
+        <img class="slot-avatar" src="${slot.cast.img}" alt="">
+        <span class="slot-name">${escapeHtml(slot.cast.name)}</span>
+      </div>
+    `;
+  }
+  return `
+    <div class="slot" data-action="drop-target" data-slot-id="${slot.id}">
+      <span class="slot-placeholder">＋<br>ドラッグして配置</span>
+    </div>
+  `;
+}
+
+/* ---- toolbar actions ---- */
+document.querySelector(".toolbar").addEventListener("click", e => {
+  const btn = e.target.closest("[data-action]");
+  if(!btn) return;
+  const action = btn.dataset.action;
+
+  if(action === "add-row"){
+    state.slots.push(makeSlot());
+    render();
+  }
+  if(action === "remove-row"){
+    if(state.slots.length > 1){
+      state.slots.pop();
+      render();
+    }
+  }
+  if(action === "save-image") saveAsImage();
+});
+
+/* ---- slot delegation ---- */
+slotsGrid.addEventListener("click", e => {
+  const clearBtn = e.target.closest('[data-action="clear-slot"]');
+  if(clearBtn){
+    const slot = state.slots.find(s => s.id === clearBtn.dataset.slotId);
+    if(slot) slot.cast = null;
+    render();
+    return;
+  }
+  const slotEl = e.target.closest('[data-action="drop-target"]');
+  if(slotEl && selectedCastId){
+    assignCastToSlot(selectedCastId, slotEl.dataset.slotId);
+    selectedCastId = null;
+    render();
+  }
+});
+
+/* global time text: sync on blur */
+document.getElementById("capTimeText").addEventListener("focusout", e => {
+  state.eventTime = e.target.textContent.trim();
+});
+
+/* ---- calendar date picker (global event date) ---- */
+document.getElementById("capDateWrap").addEventListener("click", e => {
+  openDatePicker(e.currentTarget);
+});
+
+function openDatePicker(anchorEl){
+  let input = document.getElementById("temp-date-input");
+  if(!input){
+    input = document.createElement("input");
+    input.type = "date";
+    input.id = "temp-date-input";
+    input.style.position = "fixed";
+    input.style.opacity = "0";
+    document.body.appendChild(input);
+  }
+  const rect = anchorEl.getBoundingClientRect();
+  input.style.left = rect.left + "px";
+  input.style.top = rect.top + "px";
+  input.value = state.eventDate;
+  input.onchange = () => { state.eventDate = input.value; updateDateDisplay(); };
+  input.focus();
+  if(input.showPicker){ try{ input.showPicker(); } catch(err){ input.click(); } }
+  else{ input.click(); }
+}
+
+/* ---- drag & drop ---- */
+slotsGrid.addEventListener("dragover", e => {
+  const slot = e.target.closest(".slot");
+  if(slot){ e.preventDefault(); slot.classList.add("dragover"); }
+});
+slotsGrid.addEventListener("dragleave", e => {
+  const slot = e.target.closest(".slot");
+  if(slot) slot.classList.remove("dragover");
+});
+slotsGrid.addEventListener("drop", e => {
+  const slot = e.target.closest(".slot");
+  if(!slot) return;
+  e.preventDefault();
+  slot.classList.remove("dragover");
+  const castId = e.dataTransfer.getData("text/plain");
+  if(castId) assignCastToSlot(castId, slot.dataset.slotId);
+  selectedCastId = null;
+  render();
+});
+
+function assignCastToSlot(castId, slotId){
+  const cast = castPool.find(c => c.id === castId);
+  if(!cast) return;
+  const slot = state.slots.find(s => s.id === slotId);
+  if(slot) slot.cast = { name: cast.name, img: cast.img };
+}
+
+/* ---- cast pool interactions ---- */
+castListEl.addEventListener("dragstart", e => {
+  const chip = e.target.closest(".cast-chip");
+  if(chip){
+    e.dataTransfer.setData("text/plain", chip.dataset.castId);
+    e.dataTransfer.effectAllowed = "copy";
+  }
+});
+castListEl.addEventListener("click", e => {
+  const removeBtn = e.target.closest('[data-action="remove-cast"]');
+  if(removeBtn){
+    const id = removeBtn.dataset.castId;
+    const idx = castPool.findIndex(c => c.id === id);
+    if(idx > -1) castPool.splice(idx, 1);
+    state.slots.forEach(s => {
+      if(s.cast && s.cast._id === id) s.cast = null;
+    });
+    if(selectedCastId === id) selectedCastId = null;
+    render();
+    return;
+  }
+  const chip = e.target.closest(".cast-chip");
+  if(chip){
+    const id = chip.dataset.castId;
+    selectedCastId = (selectedCastId === id) ? null : id;
+    render();
+  }
+});
+
+/* ---- add cast modal ---- */
+const addCastBackdrop = document.getElementById("addCastBackdrop");
+document.body.addEventListener("click", e => {
+  if(e.target.closest('[data-action="open-add-cast"]')){
+    addCastBackdrop.classList.add("open");
+    document.getElementById("newCastName").value = "";
+    document.getElementById("newCastPhoto").value = "";
+  }
+  if(e.target.closest('[data-action="cancel-add-cast"]') || e.target === addCastBackdrop){
+    addCastBackdrop.classList.remove("open");
+  }
+  if(e.target.closest('[data-action="confirm-add-cast"]')){
+    const nameInput = document.getElementById("newCastName");
+    const fileInput = document.getElementById("newCastPhoto");
+    const name = nameInput.value.trim();
+    if(!name){ nameInput.focus(); return; }
+    const file = fileInput.files[0];
+    const bg = PALETTE[castPool.length % PALETTE.length];
+    if(file){
+      const reader = new FileReader();
+      reader.onload = ev => {
+        castPool.push({ id: nextId(), name, img: ev.target.result });
+        render();
+      };
+      reader.readAsDataURL(file);
+    } else {
+      castPool.push({ id: nextId(), name, img: hachishakuAvatarURI(bg) });
+      render();
+    }
+    addCastBackdrop.classList.remove("open");
+  }
+});
+
+/* ---- save as image ---- */
+function saveAsImage(){
+  const target = document.getElementById("captureArea");
+  html2canvas(target, {
+    backgroundColor: "#14101A",
+    scale: 2,
+    useCORS: true,
+    ignoreElements: el => el.classList && el.classList.contains("no-capture")
+  }).then(canvas => {
+    const link = document.createElement("a");
+    link.download = "八尺様出現予定_" + todayStr() + ".png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  }).catch(() => {
+    alert("画像の保存に失敗しました。もう一度お試しください。");
+  });
+}
+
+render();
+</script>
+</body>
+</html>
