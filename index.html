@@ -487,20 +487,10 @@ const nextId = () => "id" + (++uid);
 
 /* デフォルメした八尺様の顔アイコンをその場で生成（写真未登録時のデフォルト）
    ・つばの広い帽子で目元に影が落ちているシルエットが特徴 */
-function hachishakuAvatarURI(bg){
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120">
-    <rect width="120" height="120" rx="60" fill="${bg}"/>
-    <ellipse cx="60" cy="72" rx="25" ry="29" fill="#EDE7DC"/>
-    <path d="M32 54 Q60 20 88 54 Q88 60 80 58 Q60 46 40 58 Q32 60 32 54 Z" fill="#171017"/>
-    <ellipse cx="60" cy="53" rx="42" ry="9" fill="#171017"/>
-    <ellipse cx="60" cy="62" rx="22" ry="9" fill="#000000" opacity="0.45"/>
-    <circle cx="51" cy="63" r="2.4" fill="#241722"/>
-    <circle cx="69" cy="63" r="2.4" fill="#241722"/>
-    <path d="M49 82 Q60 89 71 82" stroke="#B8AFA0" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-  </svg>`;
-  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
-}
+function hachishakuAvatarURI(){
 
+  return "./hachishaku.png"; 
+}
 function escapeHtml(str){
   return String(str).replace(/[&<>"']/g, s => ({
     "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
@@ -511,7 +501,7 @@ function escapeHtml(str){
 const castPool = CAST_LIST.map(c => ({
   id: nextId(),
   name: c.name,
-  img: c.img || hachishakuAvatarURI(c.bg)
+  img: c.img || hachishakuAvatarURI()
 }));
 let selectedCastId = null;
 
@@ -726,7 +716,7 @@ document.body.addEventListener("click", e => {
       };
       reader.readAsDataURL(file);
     } else {
-      castPool.push({ id: nextId(), name, img: hachishakuAvatarURI(bg) });
+      castPool.push({ id: nextId(), name, img: hachishakuAvatarURI() });
       render();
     }
     addCastBackdrop.classList.remove("open");
