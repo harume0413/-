@@ -113,10 +113,10 @@
   .frame-wrapper{
     position:relative;
     border:2px dashed var(--blood-bright);
-    border-radius:14px;
-    padding:28px;
-    margin-bottom:28px;
-    overflow-x:auto;
+    border-radius:28px;
+    padding: 0px;
+    width: 500px;
+    height: 500px;
     box-shadow:0 0 40px rgba(140,30,45,.15) inset;
   }
   .frame-tag{
@@ -135,13 +135,17 @@
 
   /* ---- captured area (this IS the saved image) ---- */
   #captureArea{
+    width: 500px;
+    height: 500px;
+    box-sizing: border-box;
+
     background:
-      radial-gradient(ellipse 500px 300px at 50% 0%, rgba(140,30,45,.12), transparent 65%),
+      radial-gradient(ellipse 500px 300x at 50% 0%, rgba(140,30,45,.12), transparent 65%),
       #14101A;
     border:1px solid #2A212F;
     border-radius:10px;
-    padding:24px 22px 28px;
-    min-width:fit-content;
+    padding:28px 0px 0px;
+
   }
   .cap-title{
     font-family:'Yuji Syuku', serif;
@@ -206,14 +210,21 @@
 
   /* ---- flat slot grid (no columns -> no gaps when adding/removing) ---- */
   .slots-grid{
-    display:flex;
-    flex-wrap:wrap;
-    gap:14px;
+    display:grid;
+    grid-template-columns: repeat(auto-fit, 120px);
+    gap:12px;
+    justify-content: center;
+    align-content: center;
+
+    padding: 0 24px 24px;
+    box-sizing: border-box;
   }
   .slot{
     position:relative;
-    flex:0 0 128px;
-    height:110px;
+    width:120px;
+    height:120px;
+    aspect-ratio: 1 / 1;
+
     border:2px dashed var(--slot-line);
     border-radius:8px;
     background:rgba(255,255,255,.02);
@@ -468,16 +479,15 @@
      bg    : アイコン自動生成時の背景色（img を指定する場合は無視されます）
    ========================================================================= */
 const CAST_LIST = [
-  { name: "江戸モン", img: "", bg: "#FFFFFF" },
-  { name: "ととくま", img: "", bg: "#FFFFFF" },
+  { name: "江戸モン", img: "./images/Edomon.png", bg: "#FFFFFF" },
   { name: "こえだ", img: "", bg: "#FFFFFF" },
-  { name: "風間", img: "", bg: "#FFFFFF" },
-  { name: "ゆいは", img: "", bg: "#FFFFFF" },
-  { name: "ツガル", img: "", bg: "#FFFFFF" },
-  { name: "Cham", img: "", bg: "#FFFFFF" },
+  { name: "風間", img: "./images/Kazama.png", bg: "#FFFFFF" },
+  { name: "ゆいは", img: "./images/Yuiha.png", bg: "#FFFFFF" },
+  { name: "ツガル", img: "./images/Tsugaru.png", bg: "#FFFFFF" },
+  { name: "Cham", img: "./images/Cham.png", bg: "#FFFFFF" },
   { name: "M4PLE", img: "", bg: "#FFFFFF" },
-  { name: "ぴよの", img: "", bg: "#FFFFFF" },
-  { name: "ととくま", img: "", bg: "#FFFFFF" },
+  { name: "ぴよの", img: "./images/Piyono.png", bg: "#FFFFFF" },
+  { name: "ととくま", img: "./images/Totokuma.png", bg: "#FFFFFF" },
 ];
 /* ===================================================================== */
 
@@ -485,12 +495,12 @@ const PALETTE = ["#3B1220","#241533","#1F2A38","#331A12","#2A2413","#1A2E2A"];
 let uid = 0;
 const nextId = () => "id" + (++uid);
 
-/* デフォルメした八尺様の顔アイコンをその場で生成（写真未登録時のデフォルト）
-   ・つばの広い帽子で目元に影が落ちているシルエットが特徴 */
-function hachishakuAvatarURI(){
+/* 八尺様の顔アイコン */
+  function hachishakuAvatarURI(){
 
   return "./hachishaku.png"; 
 }
+
 function escapeHtml(str){
   return String(str).replace(/[&<>"']/g, s => ({
     "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
@@ -501,7 +511,7 @@ function escapeHtml(str){
 const castPool = CAST_LIST.map(c => ({
   id: nextId(),
   name: c.name,
-  img: c.img || hachishakuAvatarURI()
+  img: c.img || hachishakuAvatarURI(c.bg)
 }));
 let selectedCastId = null;
 
@@ -566,6 +576,7 @@ function renderSlot(slot){
       <span class="slot-placeholder">＋<br>ドラッグして配置</span>
     </div>
   `;
+  
 }
 
 /* ---- toolbar actions ---- */
@@ -575,6 +586,10 @@ document.querySelector(".toolbar").addEventListener("click", e => {
   const action = btn.dataset.action;
 
   if(action === "add-row"){
+    if (state.slots.length >= 6) {
+      alert("スロットは最大2段（6個）までしか追加できません。");
+      return; // これ以上増やさないように処理を終了する
+    }
     state.slots.push(makeSlot());
     render();
   }
@@ -716,7 +731,7 @@ document.body.addEventListener("click", e => {
       };
       reader.readAsDataURL(file);
     } else {
-      castPool.push({ id: nextId(), name, img: hachishakuAvatarURI() });
+      castPool.push({ id: nextId(), name, img: hachishakuAvatarURI(bg) });
       render();
     }
     addCastBackdrop.classList.remove("open");
