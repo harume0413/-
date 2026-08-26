@@ -12,14 +12,14 @@
     --bg:#0B0A0E;
     --card:#1C1520;
     --card2:#221A26;
-    --blood:#8e1b2a76;
-    --blood-bright:#c4283d74;
+    --blood:#8E1B2B;
+    --blood-bright:#C4283D;
     --violet:#5C3A78;
     --bone:#E9E3D6;
     --bone-dim:#B8AFA0;
     --line:#3A2E3D;
     --slot-line:#4A3B52;
-    --glow: rgba(196, 40, 61, 0.142);
+    --glow: rgba(196,40,61,.45);
   }
   *{box-sizing:border-box;}
   html,body{ height:100%; }
@@ -117,6 +117,8 @@
     padding: 0px;
     width: 500px;
     height: 500px;
+    max-width:100%;
+    margin:0 auto;
     box-shadow:0 0 40px rgba(140,30,45,.15) inset;
   }
   .frame-tag{
@@ -282,6 +284,18 @@
     padding:0;
   }
 
+  @media (max-width:600px){
+
+  .slot-clear{
+    width:24px;
+    height:24px;
+    top:-9px;
+    right:-9px;
+    font-size:12px;
+  }
+
+}
+
   /* ---- cast pool (outside the captured frame) ---- */
   .pool-card{
     background:var(--card);
@@ -298,6 +312,21 @@
     flex-wrap:wrap;
     gap:8px;
   }
+
+  @media (max-width:600px){
+
+  .pool-head{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .pool-head .btn{
+    width:100%;
+    justify-content:center;
+  }
+
+}
+
   .pool-head h2{
     font-family:'Yuji Syuku', serif;
     font-weight:400;
@@ -405,11 +434,101 @@
   .modal-actions{ display:flex; gap:8px; margin-top:20px; }
   .modal-actions .btn{ flex:1; justify-content:center; }
 
-  @media (max-width:600px){
-    .frame-wrapper{ padding:20px 14px; }
-    .slot{ flex:0 0 110px; height:100px; }
-    h1.page-title{ font-size:26px; }
+ @media (max-width:600px){
+
+  body{
+    padding:20px 10px 60px;
   }
+
+  .wrap{
+    width:100%;
+  }
+
+  h1.page-title{
+    font-size:26px;
+  }
+
+  p.page-sub{
+    font-size:11px;
+    line-height:1.6;
+    padding:0 10px;
+  }
+
+  .toolbar{
+    gap:7px;
+    margin:18px 0 20px;
+  }
+
+  .btn{
+    font-size:12px;
+    padding:9px 11px;
+  }
+
+  .btn.primary{
+    font-size:13px;
+    padding:10px 14px;
+  }
+
+  /*
+   * 出勤表は500×500のまま。
+   * スマホ画面では縮小して表示する。
+   */
+  .frame-wrapper{
+    width:min(500px, 100%);
+    height:auto;
+    aspect-ratio:1 / 1;
+    border-radius:20px;
+    overflow:hidden;
+  }
+
+  #captureArea{
+    width:500px;
+    height:500px;
+
+    /*
+     * 画面幅に合わせて縮小
+     */
+    transform-origin:top left;
+  }
+
+  .pool-card{
+    margin-top:20px;
+    padding:16px 14px;
+  }
+
+  .pool-head{
+    align-items:flex-start;
+  }
+
+  .pool-head h2{
+    font-size:17px;
+  }
+
+  .pool-hint{
+    line-height:1.6;
+  }
+
+  .cast-list{
+    gap:8px;
+    justify-content:center;
+  }
+
+  .cast-chip{
+    width:70px;
+    padding:6px 3px 8px;
+  }
+
+  .cast-chip img{
+    width:48px;
+    height:48px;
+  }
+
+  .cast-chip span{
+    font-size:10.5px;
+  }
+
+}
+
 </style>
 </head>
 <body>
@@ -672,8 +791,16 @@ slotsGrid.addEventListener("drop", e => {
 function assignCastToSlot(castId, slotId){
   const cast = castPool.find(c => c.id === castId);
   if(!cast) return;
+
   const slot = state.slots.find(s => s.id === slotId);
-  if(slot) slot.cast = { name: cast.name, img: cast.img };
+
+  if(slot){
+    slot.cast = {
+      _id: cast.id,
+      name: cast.name,
+      img: cast.img
+    };
+  }
 }
 
 /* ---- cast pool interactions ---- */
