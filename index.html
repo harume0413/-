@@ -5,28 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>キャスト出勤表メーカー</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Hina+Mincho&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root{
     --bg:#0B0A0E;
     --card:#1C1520;
     --card2:#221A26;
-    --blood:#8E1B2B;
-    --blood-bright:#C4283D;
+    --blood:	#E006E0;
+    --blood-bright:	#d26dd29d;
     --violet:#5C3A78;
     --bone:#E9E3D6;
     --bone-dim:#B8AFA0;
     --line:#3A2E3D;
     --slot-line:#4A3B52;
-    --glow: rgba(196,40,61,.45);
+    --glow:	#e006e058;
   }
   *{box-sizing:border-box;}
   html,body{ height:100%; }
   body{
     margin:0;
     color:var(--bone);
-    font-family:'Noto Sans JP', sans-serif;
+    font-family:"Hina Mincho", serif;
     padding:30px 16px 90px;
     background:
       radial-gradient(ellipse 900px 500px at 15% -10%, rgba(140,30,45,.25), transparent 60%),
@@ -103,11 +103,11 @@
   .btn.primary{
     background:linear-gradient(160deg, var(--blood-bright), var(--blood) 70%);
     border:1.5px solid var(--blood-bright);
-    box-shadow:0 0 18px rgba(196,40,61,.45);
+    box-shadow:0 0 18px #E006E0;
     font-size:14px;
     padding:11px 22px;
   }
-  .btn.primary:hover{ box-shadow:0 0 26px rgba(196,40,61,.7); }
+  .btn.primary:hover{ box-shadow:0 0 26px #E006E0; }
 
   /* ---- viewfinder wrapper (decorative, NOT captured) ---- */
   .frame-wrapper{
@@ -134,7 +134,7 @@
     padding:4px 12px;
     border-radius:999px;
     letter-spacing:.03em;
-    box-shadow:0 0 12px rgba(196,40,61,.6);
+    box-shadow:0 0 12px	#E006E0;
   }
 
   /* ---- captured area (this IS the saved image) ---- */
@@ -169,7 +169,7 @@
     outline:none;
     color:var(--bone);
     letter-spacing:.06em;
-    text-shadow:0 0 10px rgba(196,40,61,.5);
+    text-shadow:0 0 10px 	#E006E0;
     border-bottom:2px solid transparent;
     padding-bottom:4px;
   }
@@ -270,7 +270,7 @@
     border-radius:50%;
     object-fit:cover;
     border:2px solid var(--blood-bright);
-    box-shadow:0 0 8px rgba(196,40,61,.5);
+    box-shadow:0 0 8px	#e006e059;
     pointer-events:none;
   }
   .slot-name{
