@@ -111,16 +111,18 @@
 
   /* ---- viewfinder wrapper (decorative, NOT captured) ---- */
   .frame-wrapper{
-    position:relative;
-    border:2px dashed var(--blood-bright);
-    border-radius:28px;
-    padding: 0px;
-    width: 500px;
-    height: 500px;
-    max-width:100%;
-    margin:0 auto;
-    box-shadow:0 0 40px rgba(140,30,45,.15) inset;
-  }
+  position:relative;
+  border:2px dashed var(--blood-bright);
+  border-radius:28px;
+  padding:0;
+
+  width:500px;
+  height:500px;
+
+  margin:0 auto;
+
+  box-shadow:0 0 40px rgba(140,30,45,.15) inset;
+}
   .frame-tag{
     position:absolute;
     top:-15px;
@@ -136,19 +138,29 @@
   }
 
   /* ---- captured area (this IS the saved image) ---- */
-  #captureArea{
-    width: 500px;
-    height: 500px;
-    box-sizing: border-box;
+ #captureArea{
+  width:500px;
+  height:500px;
+  box-sizing:border-box;
 
-    background:
-      radial-gradient(ellipse 500px 300x at 50% 0%, rgba(140,30,45,.12), transparent 65%),
-      #14101A;
-    border:1px solid #2A212F;
-    border-radius:10px;
-    padding:28px 0px 0px;
+  background:
+    radial-gradient(
+      ellipse 500px 300px at 50% 0%,
+      rgba(140,30,45,.12),
+      transparent 65%
+    ),
+    #14101A;
 
-  }
+  border:1px solid #2A212F;
+  border-radius:10px;
+  padding:28px 0 0;
+
+  position:absolute;
+  left:50%;
+  top:0;
+
+  transform-origin:top center;
+}
   .cap-title{
     font-family:'Yuji Syuku', serif;
     font-size:26px;
