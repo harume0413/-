@@ -956,6 +956,23 @@ function saveAsImage(){
   });
 }
 
+function resizeCaptureArea(){
+
+  const wrapper = document.querySelector(".frame-wrapper");
+  const capture = document.getElementById("captureArea");
+
+  if(!wrapper || !capture) return;
+
+  const scale = wrapper.clientWidth / 500;
+
+  capture.style.transform =
+    `translateX(-50%) scale(${scale})`;
+}
+
+window.addEventListener("resize", resizeCaptureArea);
+
+resizeCaptureArea();
+  
 render();
 </script>
 </body>
