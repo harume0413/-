@@ -868,22 +868,88 @@ document.body.addEventListener("click", e => {
 /* ---- save as image ---- */
 function saveAsImage(){
   const target = document.getElementById("captureArea");
+
   html2canvas(target, {
     backgroundColor: "#14101A",
     scale: 2,
     useCORS: true,
-    ignoreElements: el => el.classList && el.classList.contains("no-capture")
+    allowTaint: false,
+    ignoreElements: el =>
+      el.classList && el.classList.contains("no-capture")
   }).then(canvas => {
-    const link = document.createElement("a");
-    link.download = "八尺様出現予定_" + todayStr() + ".png";
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-  }).catch(() => {
+
+    const imageURL = canvas.toDataURL("image/png");
+
+    // スマホの場合
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+
+      const win = window.open("");
+
+      if (!win) {
+        alert("画像を表示できませんでした。ポップアップを許可してください。");
+        return;
+      }
+
+      win.document.write(`
+        <!DOCTYPE html>
+        <html lang="ja">
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>出勤表</title>
+          <style>
+            body{
+              margin:0;
+              padding:20px;
+              background:#0B0A0E;
+              color:#E9E3D6;
+              text-align:center;
+              font-family:sans-serif;
+            }
+
+            p{
+              font-size:14px;
+              line-height:1.7;
+            }
+
+            img{
+              display:block;
+              width:100%;
+              max-width:500px;
+              height:auto;
+              margin:20px auto;
+            }
+          </style>
+        </head>
+        <body>
+
+          <p>
+            画像を長押しして<br>
+            「写真に保存」してください
+          </p>
+
+          <img src="${imageURL}" alt="出勤表">
+
+        </body>
+        </html>
+      `);
+
+      win.document.close();
+
+    } else {
+
+      // PCの場合
+      const link = document.createElement("a");
+      link.download = "八尺様出現予定_" + todayStr() + ".png";
+      link.href = imageURL;
+      link.click();
+
+    }
+
+  }).catch(err => {
+    console.error(err);
     alert("画像の保存に失敗しました。もう一度お試しください。");
   });
 }
-
-render();
 </script>
 </body>
 </html>
