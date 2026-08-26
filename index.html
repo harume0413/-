@@ -473,23 +473,28 @@
    * 出勤表は500×500のまま。
    * スマホ画面では縮小して表示する。
    */
-  .frame-wrapper{
-    width:min(500px, 100%);
+.frame-wrapper{
+    width:100%;
     height:auto;
     aspect-ratio:1 / 1;
-    border-radius:20px;
+
+    margin:0 auto;
+
     overflow:hidden;
   }
 
   #captureArea{
+    position:absolute;
+
     width:500px;
     height:500px;
 
-    /*
-     * 画面幅に合わせて縮小
-     */
-    transform-origin:top left;
+    left:50%;
+    top:0;
+
+    transform-origin:top center;
   }
+
 
   .pool-card{
     margin-top:20px;
