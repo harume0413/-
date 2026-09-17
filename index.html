@@ -223,36 +223,21 @@
   .cap-time-text:focus{ border-bottom:1px dashed var(--bone); color:var(--bone); }
 
   /* ---- flat slot grid (no columns -> no gaps when adding/removing) ---- */
-  .slots-grid{
 .slots-grid{
   display:grid;
   gap:12px;
   justify-content:center;
-  align-content:center;
 
   padding:0 24px 24px;
   box-sizing:border-box;
-}
 
-/* 1～3個 */
-.slots-grid.slots-1,
-.slots-grid.slots-2,
-.slots-grid.slots-3{
   grid-template-columns:repeat(3, 120px);
+
+  /* 出勤表の残りスペースに収める */
+  max-height:350px;
+  overflow:hidden;
 }
 
-/* 4個 → 2×2 */
-.slots-grid.slots-4{
-  grid-template-columns:repeat(2, 120px);
-}
-
-/* 5～6個 → 3×2 */
-.slots-grid.slots-5,
-.slots-grid.slots-6{
-  grid-template-columns:repeat(3, 120px);
-}
-
-  }
   .slot{
     position:relative;
     width:120px;
@@ -705,8 +690,13 @@ function updateDateDisplay(){
 
 function render(){
   updateDateDisplay();
-  
-  slotsGrid.className = "slots-grid slots-" + state.slots.length;
+
+  // スロット数に応じて列数を決める
+  if(state.slots.length === 4){
+    slotsGrid.style.gridTemplateColumns = "repeat(2, 120px)";
+  }else{
+    slotsGrid.style.gridTemplateColumns = "repeat(3, 120px)";
+  }
 
   slotsGrid.innerHTML = state.slots.map(slot => renderSlot(slot)).join("");
 
