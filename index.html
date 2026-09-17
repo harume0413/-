@@ -224,14 +224,34 @@
 
   /* ---- flat slot grid (no columns -> no gaps when adding/removing) ---- */
   .slots-grid{
-    display:grid;
-    grid-template-columns: repeat(auto-fit, 120px);
-    gap:12px;
-    justify-content: center;
-    align-content: center;
+.slots-grid{
+  display:grid;
+  gap:12px;
+  justify-content:center;
+  align-content:center;
 
-    padding: 0 24px 24px;
-    box-sizing: border-box;
+  padding:0 24px 24px;
+  box-sizing:border-box;
+}
+
+/* 1～3個 */
+.slots-grid.slots-1,
+.slots-grid.slots-2,
+.slots-grid.slots-3{
+  grid-template-columns:repeat(3, 120px);
+}
+
+/* 4個 → 2×2 */
+.slots-grid.slots-4{
+  grid-template-columns:repeat(2, 120px);
+}
+
+/* 5～6個 → 3×2 */
+.slots-grid.slots-5,
+.slots-grid.slots-6{
+  grid-template-columns:repeat(3, 120px);
+}
+
   }
   .slot{
     position:relative;
@@ -621,7 +641,7 @@ const CAST_LIST = [
   { name: "ゆいは", img: "./images/Yuiha.png", bg: "#FFFFFF" },
   { name: "ツガル", img: "./images/Tsugaru.png", bg: "#FFFFFF" },
   { name: "Cham", img: "./images/Cham.png", bg: "#FFFFFF" },
-  { name: "楓", img: "./images/Kaede.png", bg: "#FFFFFF" },
+  { name: "楓", img: "", bg: "#FFFFFF" },
   { name: "ぴよの", img: "./images/Piyono.png", bg: "#FFFFFF" },
   { name: "ととくま", img: "./images/Totokuma.png", bg: "#FFFFFF" },
 ];
@@ -685,6 +705,8 @@ function updateDateDisplay(){
 
 function render(){
   updateDateDisplay();
+  
+  slotsGrid.className = "slots-grid slots-" + state.slots.length;
 
   slotsGrid.innerHTML = state.slots.map(slot => renderSlot(slot)).join("");
 
